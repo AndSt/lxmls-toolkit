@@ -13,7 +13,7 @@ class Perceptron(lc.LinearClassifier):
         self.averaged = averaged
         self.params_per_round = []
 
-    def train(self, x, y, seed=1):
+    def train(self, x, y, dataset, seed=1):
         self.params_per_round = []
         x_orig = x[:, :]
         x = self.add_intercept_term(x)
@@ -47,6 +47,9 @@ class Perceptron(lc.LinearClassifier):
             acc = self.evaluate(y, y_pred)
             self.trained = False
             print("Rounds: %i Accuracy: %f" % (epoch_nr, acc))
+            if epoch_nr % 5 == 0:
+                fig, axis = dataset.plot_data(f"osx_{epoch_nr}")
+                fig, axis = dataset.add_line(fig, axis, w, f"Perceptron_{epoch_nr}", "blue")
         self.trained = True
 
         if self.averaged:
@@ -54,5 +57,5 @@ class Perceptron(lc.LinearClassifier):
             for old_w in self.params_per_round:
                 new_w += old_w
             new_w /= len(self.params_per_round)
-            return new_w
-        return w
+            return new_w, self.params_per_round
+        return w, self.params_per_round

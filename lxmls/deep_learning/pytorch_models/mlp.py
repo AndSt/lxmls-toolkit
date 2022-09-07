@@ -26,6 +26,7 @@ class PytorchMLP(MLP):
         for n in range(self.num_layers):
             # Get weigths and bias of the layer (even and odd positions)
             weight, bias = self.parameters[n]
+            print(weight.shape, bias.shape)
             self.parameters[n] = [cast_float(weight), cast_float(bias)]
 
         # Initialize some functions that we will need
@@ -41,16 +42,26 @@ class PytorchMLP(MLP):
         input = cast_float(input)
 
         # Input
-        tilde_z = input
+        log_tilde_z = input
 
         # ----------
         # Solution to Exercise 4
-
-        raise NotImplementedError("Implement Exercise 4")
+        # IMPORTANT: Cast to pytorch format
+        # input = Variable(torch.from_numpy(input).float(), requires_grad=False)
+        # Linear transformation
+        num_hidden_layers = len(self.parameters) - 1
+        for n in range(num_hidden_layers):
+            weight, bias = self.parameters[n]
+            z = torch.matmul(log_tilde_z, torch.t(weight)) + bias
+            # Softmax implemented in log domain
+            log_tilde_z = self.logsoftmax(z)
+        # NOTE that this is a pytorch class!
+        weight, bias = self.parameters[num_hidden_layers]
+        z = torch.matmul(log_tilde_z, torch.t(weight)) + bias
+        log_tilde_z = z - torch.logsumexp(z, axis=1, keepdims=True)
 
         # End of solution to Exercise 4
         # ----------
-
         return log_tilde_z
 
     def gradients(self, input, output):

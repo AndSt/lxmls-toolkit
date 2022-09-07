@@ -85,7 +85,7 @@ class NumpyMLP(MLP):
         log_prob_y, layer_inputs = self.log_forward(input)
         prob_y = np.exp(log_prob_y)
 
-        num_examples, num_clases = prob_y.shape
+        num_examples, num_classes = prob_y.shape
         num_hidden_layers = len(self.parameters) - 1
 
         # For each layer in reverse store the backpropagated error, then compute
@@ -94,9 +94,48 @@ class NumpyMLP(MLP):
 
         # ----------
         # Solution to Exercise 2
+        # shape: num_examples, num_classes
+        # a = [layer_input.shape for layer_input in layer_inputs]
+        # print("layerinp:", a)
 
-        raise NotImplementedError("Implement Exercise 2")
-        
+        gradients = []
+
+        for i in range(num_hidden_layers, -1, -1):
+            # print(f"i: {i}")
+            if i == num_hidden_layers:
+                I = index2onehot(output, num_classes)
+                error = (prob_y - I)
+                errors.append(error)
+            else:
+                # print("inds: ",i + 1, num_hidden_layers - (i + 1))
+                Wn = self.parameters[i+1][0]
+                err_n = errors[num_hidden_layers - (i + 1)]
+                # print("matr: ", Wn.shape, err_n.shape)
+                em = np.dot(err_n, Wn)
+                # print("em, zs: ", em.shape, layer_inputs[i + 1].shape)
+                z_n = layer_inputs[i + 1]
+
+                # shape: (b, layer_size[i])
+                error = em * z_n * (1-z_n)
+                errors.append(error)
+
+            error = errors[-1]
+            bias_update = error.mean(axis=0)
+            # print("bias shape: ", i, bias_update.shape)
+
+            z_n_minus_1 = layer_inputs[i]
+            weight_update = np.dot(error.T, z_n_minus_1) / num_examples
+            # print("weight up shape: ", weight_update.shape)
+
+            gradients.append([weight_update, bias_update])
+
+        # reverse gradient list:
+        gradients.reverse()
+        # print(len(gradients))
+
+
+        # raise NotImplementedError("Implement Exercise 2")
+
         # End of solution to Exercise 2
         # ----------
 

@@ -42,7 +42,17 @@ class MultinomialNaiveBayes(lc.LinearClassifier):
         # ----------
         # Solution to Exercise 1
 
-        raise NotImplementedError("Complete Exercise 1")
+        # initialize prior
+        unique, counts = np.unique(x, return_counts=True)
+        prior = counts / n_docs
+
+        # initialize likelihood
+        for i in range(n_classes):
+            class_i_ind = np.where(y == i)[0]
+
+            # enable or disable smoothing by commenting out last part
+            likelihood[:, i] = x[class_i_ind].sum(axis=0) + 0.1
+            likelihood[:, i] /= likelihood[:, i].sum()
 
         # End solution to Exercise 1
         # ----------

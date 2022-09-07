@@ -31,6 +31,7 @@ class SequenceClassifier:
 
     def compute_scores(self, sequence):
         """ Compute emission and transition scores for the decoder."""
+
         raise NotImplementedError
 
     def compute_output_score(self, states, initial_scores, transition_scores,

@@ -39,16 +39,16 @@ class NumpyRNN(RNN):
 
         # Embedding layer
         z_e = W_e[input, :]
+        print(W_e.shape, input.shape, z_e.shape)
 
         # Recurrent layer
         h = np.zeros((nr_steps + 1, hidden_size))
         for t in range(nr_steps):
-
             # Linear
             z_t = W_x.dot(z_e[t, :]) + W_h.dot(h[t, :])
 
             # Non-linear
-            h[t+1, :] = 1.0 / (1 + np.exp(-z_t))
+            h[t + 1, :] = 1.0 / (1 + np.exp(-z_t))
 
         # Output layer
         y = h[1:, :].dot(W_y.T)
@@ -73,6 +73,7 @@ class NumpyRNN(RNN):
         # Get parameters and sizes
         W_e, W_x, W_h, W_y = self.parameters
         nr_steps = input.shape[0]
+        nr_classes, emb_dim = W_y.shape
 
         log_p_y, y, h, z_e, x = self.log_forward(input)
         p_y = np.exp(log_p_y)
@@ -85,8 +86,42 @@ class NumpyRNN(RNN):
 
         # ----------
         # Solution to Exercise 1
+        print("p_y", p_y.shape, "W_e", W_e.shape, "W_x", W_x.shape, "W_h", W_h.shape, "W_y", W_y.shape, "y", y.shape,
+              "x", x.shape, z_e.shape)
+        labels = index2onehot(output, nr_classes)
+        print(labels.shape)
+        err_y = p_y - index2onehot(output, nr_classes)#, W_y)
+        # for m in range(nr_steps)
 
-        raise NotImplementedError("Implement Exercise 1")
+        err = np.zeros((emb_dim,))
+        err_h = np.zeros((nr_steps, emb_dim))
+        err_e = np.zeros((nr_steps, W_x.shape[1]))
+        print("h", h.shape, "err_y", err_y.shape)
+        # for m in (nr_steps - 1, -1, -1):
+        #     err_h[m, :] = (err + err_y[m, :]) * (h[m + 1]) * (1 - h[m + 1])
+        #     print(err_h.shape)
+        #     err = np.dot(W_h.T, err_h[m, :])
+        #     err_e[m, :] = np.dot(W_x.T, err_h[m, :])
+
+        x_matr = index2onehot(input, W_e.shape[0])
+
+        for i in range(nr_steps):
+            # ill = np.dot(np.expand_dims(h[m + 1, :], 1), np.expand_dims(err_y[m, :], 0))
+            # print("ill", ill.shape, x_matr[m, :].shape)
+            gradient_W_y += np.dot(np.expand_dims(h[i + 1, :], 1), np.expand_dims(err_y[i, :], 0)).T
+            # gradient_W_h += np.dot(np.expand_dims(err_h[m, :], 1), np.expand_dims(h[i, :], 1).T).T
+            # gradient_W_x += np.dot(np.expand_dims(err_h[m, :], 1), np.expand_dims(z_e[i, :], 1).T)
+            # #
+            # gradient_W_e += np.dot(np.expand_dims(err_e[m, :], 1), np.expand_dims(x_matr[m], 1).T).T
+
+        gradient_W_y /= nr_steps
+        gradient_W_h /= nr_steps
+        gradient_W_x /= nr_steps
+        gradient_W_e /= nr_steps
+        print((np.dot(err_y.T, h[1:, ]) / nr_steps).shape)
+        # gradient_W_y = np.dot(err_y.T, y) / nr_steps
+
+        # raise NotImplementedError("Implement Exercise 1")
 
         # End of Solution to Exercise 1
         # ----------

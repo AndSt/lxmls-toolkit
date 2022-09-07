@@ -139,7 +139,14 @@ class HMM(sc.SequenceClassifier):
 
     def update_counts(self, sequence, state_posteriors, transition_posteriors):
         """ Used in the E-step in EM."""
+        print(len(sequence))
+        print(sequence)
+        print(state_posteriors.shape)
+        print(transition_posteriors.shape)
+        print(state_posteriors)
 
+        self.initial_counts += state_posteriors[0, :]
+        # self.final_counts += state_posteriors[].sum(axis=1)
         # ----------
         # Solution to Exercise 10
 
